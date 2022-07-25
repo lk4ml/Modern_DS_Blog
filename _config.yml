@@ -21,7 +21,7 @@
 title:               Minimal Stats Maximum Information
 tagline:             'An attempt to denoise the information'
 description:         'A Blog by a modern age Applied AI Scientist <a href="lkt4ml@gmail.com" </a> with an attempt of making few things simplers for everyone.Made by <a href="linkedin.com/in/lktyagi" target="_blank">@lktyagi</a>.'
-url:                 http://lanyon.getpoole.com
+
 baseurl: "/Modern_DS_Blog" # the subpath of your site, e.g. /blog
 url: "https://lk4ml.github.io" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: lktyagi88
