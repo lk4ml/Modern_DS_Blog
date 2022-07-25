@@ -22,9 +22,9 @@ kramdown:
 
 # About/contact
 author:
-  name:              Mriyam Bikash Tamuli
-  twitter:           mbtamuli
-  email:             mbtamuli@gmail.com
+  name:              Love Tyagi
+  twitter:           Lktyagi88
+  email:             lk4ml@gmail.com
 
 # Custom vars
 version:             0.0.6
@@ -32,7 +32,7 @@ version:             0.0.6
 # Google Analytics
 analytics:
   google:
-    tracking_id          : 'UA-123129368-1'
+    tracking_id          : ''
 
 plugins:
   - jemoji
