@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.0">Jekyll</generator><link href="http://localhost:4000/Modern_DS_Blog/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/Modern_DS_Blog/" rel="alternate" type="text/html" /><updated>2022-07-25T01:38:07-07:00</updated><id>http://localhost:4000/Modern_DS_Blog/feed.xml</id><title type="html">mbtamuli’s scratchpad</title><subtitle>Linux enthusiast. Tinkerer. Love me a challenge.</subtitle><author><name>Mriyam Bikash Tamuli</name><email>mbtamuli@gmail.com</email></author><entry><title type="html">Route VPN Traffic</title><link href="http://localhost:4000/Modern_DS_Blog/route-vpn-traffic/" rel="alternate" type="text/html" title="Route VPN Traffic" /><published>2020-08-26T00:00:00-07:00</published><updated>2020-08-26T00:00:00-07:00</updated><id>http://localhost:4000/Modern_DS_Blog/route-vpn-traffic</id><content type="html" xml:base="http://localhost:4000/Modern_DS_Blog/route-vpn-traffic/">&lt;p&gt;My personal laptop, my beloved Dell XPS 15, broke down. The SSD was not being detected. Fixing it would take time and I thought I’d get it fixed when I less workload.&lt;/p&gt;
+
+&lt;p&gt;Now as part of my work, I need to connect to a VPN. The VPN solution is &lt;a href=&quot;https://www.paloaltonetworks.com/products/globalprotect&quot;&gt;Palo Alto’s GlobalProtect VPN&lt;/a&gt; :sweat_smile: (I’ll rant about GlobalProtect VPN some other time!). I can only connect to the VPN using my Dell XPS as it’s MAC address was registered. I got another laptop lying around(ThinkPad E470), but the process to get this new laptop’s MAC address registered would take around 2 weeks!&lt;/p&gt;
+
+&lt;p&gt;Using a ArchLinux LiveUSB, I was able to check that I could connect to the VPN from the XPS. Just that my SSD was not being detected. To get working quickly, I thought I could figure out a way to route the traffic from the ThinkPad laptop through the Dell XPS laptop(while it was connected to the VPN).&lt;/p&gt;
+
+&lt;p&gt;Using the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;getent&lt;/code&gt; command, on the Dell XPS, I got the IP address of the hosts I wanted to route using the VPN.&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;getent hosts git.example.com
+172.17.1.174     git.example.com
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;I stored the entries in the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/etc/hosts&lt;/code&gt; file on the ThinkPad laptop.&lt;/p&gt;
+
+&lt;p&gt;Also, had to make sure the Dell XPS laptop was able to forward traffic and setup iptables to do NAT.&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;sysctl &lt;span class=&quot;nt&quot;&gt;-w&lt;/span&gt; net.ipv4.ip_forward&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;1
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;iptables &lt;span class=&quot;nt&quot;&gt;-t&lt;/span&gt; nat &lt;span class=&quot;nt&quot;&gt;-A&lt;/span&gt; POSTROUTING &lt;span class=&quot;nt&quot;&gt;-o&lt;/span&gt; gpd0 &lt;span class=&quot;nt&quot;&gt;-j&lt;/span&gt; MASQUERADE
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now, to actually route the traffic.&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;ip route add 172.17.1.174 via 192.168.31.60
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;In this command, the IP &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;172.17.1.174&lt;/code&gt; is the IP that we want to be routed through the VPN. The IP &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;192.168.31.60&lt;/code&gt; is the IP address of the Dell XPS. Since I already have the entry in the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/etc/hosts&lt;/code&gt; file, I am done.&lt;/p&gt;
+
+&lt;p&gt;Browse to git.example.com, and voilà. Everything works as expected! :smile:&lt;/p&gt;
+
+&lt;p&gt;References:
+These answers helped me understand what I needed to do. Also the man pages of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;sysctl&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;iptables&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ip route&lt;/code&gt;&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;a href=&quot;https://unix.stackexchange.com/questions/511967/how-to-route-traffic-through-vpn-only-accessible-within-vm-without-a-bridged-ad&quot;&gt;https://unix.stackexchange.com/questions/511967/how-to-route-traffic-through-vpn-only-accessible-within-vm-without-a-bridged-ad&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://superuser.com/questions/1061363/how-to-route-traffic-through-a-vpn-that-is-only-available-through-another-comput&quot;&gt;https://superuser.com/questions/1061363/how-to-route-traffic-through-a-vpn-that-is-only-available-through-another-comput&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://askubuntu.com/questions/907972/route-all-traffic-of-a-machine-through-another-within-a-subnet&quot;&gt;https://askubuntu.com/questions/907972/route-all-traffic-of-a-machine-through-another-within-a-subnet&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;</content><author><name>Mriyam Bikash Tamuli</name><email>mbtamuli@gmail.com</email></author><category term="linux" /><summary type="html">My personal laptop, my beloved Dell XPS 15, broke down. The SSD was not being detected. Fixing it would take time and I thought I’d get it fixed when I less workload.</summary></entry><entry><title type="html">Backup files to git repo before shutdown</title><link href="http://localhost:4000/Modern_DS_Blog/backup-work-git/" rel="alternate" type="text/html" title="Backup files to git repo before shutdown" /><published>2020-07-24T00:00:00-07:00</published><updated>2020-07-24T00:00:00-07:00</updated><id>http://localhost:4000/Modern_DS_Blog/backup-work-git</id><content type="html" xml:base="http://localhost:4000/Modern_DS_Blog/backup-work-git/">&lt;p&gt;I have a few files that I want to push to a remote repository just before shutdown. It could be many use cases, but mine is, I want my dotfiles synced to &lt;a href=&quot;https://github.com/mbtamuli/dotfiles&quot;&gt;mbtamuli/dotfiles&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Well, the approach is simple&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;setup a small script to do git push&lt;/li&gt;
+  &lt;li&gt;have a systemd service&lt;/li&gt;
+  &lt;li&gt;What? You thought there’d be a ton of steps? Sorry to dissapoint. :grin:&lt;/li&gt;
+  &lt;li&gt;profit! :sunglasses:&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Create another file and do whatever you need &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/usr/local/bin/backup_work.sh&lt;/code&gt;&lt;/p&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;#!/bin/bash
+
+cd /path/to/git/repo
+git add .
+git commit -m &quot;Daily Backup&quot;
+git push origin master
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Add executable permissions&lt;/p&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;chmod +x /usr/local/bin/backup_work.sh
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Create a file at &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/etc/systemd/system/backup-work.service&lt;/code&gt;. Change the user and group!&lt;/p&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;[Unit]
+Description=Backup files to git repo
+DefaultDependencies=no
+Before=shutdown.target reboot.target halt.target
+
+[Service]
+Type=oneshot
+User=mbtamuli
+Group=mbtamuli
+ExecStart=/usr/local/bin/backup_work.sh
+
+[Install]
+WantedBy=halt.target reboot.target shutdown.target
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;</content><author><name>Mriyam Bikash Tamuli</name><email>mbtamuli@gmail.com</email></author><category term="linux" /><summary type="html">I have a few files that I want to push to a remote repository just before shutdown. It could be many use cases, but mine is, I want my dotfiles synced to mbtamuli/dotfiles.</summary></entry><entry><title type="html">Why Functional Programming Matters</title><link href="http://localhost:4000/Modern_DS_Blog/functional-programming/" rel="alternate" type="text/html" title="Why Functional Programming Matters" /><published>2019-11-11T00:00:00-08:00</published><updated>2019-11-11T00:00:00-08:00</updated><id>http://localhost:4000/Modern_DS_Blog/functional-programming</id><content type="html" xml:base="http://localhost:4000/Modern_DS_Blog/functional-programming/">&lt;p&gt;This article will be my take on why functional programming matters, largely with a focus on the paper with the same name, authored by John Hughes in the year 1984 - &lt;a href=&quot;https://github.com/papers-we-love/papers-we-love/blob/master/languages-paradigms/functional_programming/why-functional-programming-matters.pdf&quot;&gt;Link to the paper&lt;/a&gt;.
+&lt;!--more--&gt;&lt;/p&gt;
+
+&lt;p&gt;For me, I was blissfully unaware, for all intents and purposes, of the functional programming language paradigm until quite recently. But once I started learning about the powers that functional programming provides, I started feeling a responsibility of learning about it well!&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;/public/images/functional-progressive.png&quot;&gt;&lt;img src=&quot;/public/images/functional-progressive.png&quot; alt=&quot;Progress of languages&quot; /&gt;&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;As one of the most trivially available sources of information, one need to only look at page of Object-oriented Programming on Wikipedia to find &lt;a href=&quot;https://en.wikipedia.org/wiki/Object-oriented_programming#Criticism&quot;&gt;criticism for that paradigm&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&quot;/public/images/lambda.png&quot;&gt;&lt;img src=&quot;/public/images/lambda.png&quot; alt=&quot;Lambda&quot; /&gt;&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;We are introduced to the simple definition of functional programming as a program which consists entirely of functions. Using functions to contain language primitives at the bottom level, other higher order functions are composed of the ones at a lower level, until reaching the main function which is defined using some combination of all the lower functions.&lt;/p&gt;
+
+&lt;p&gt;Some special characteristics and advantages of functional programming are&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;being devoid of assignment statements and thus, once a variable is given a value, it never changes.&lt;/li&gt;
+  &lt;li&gt;functional programs do not contain side-effects. Side effect is anything apart from the computation required to arrive at the result.&lt;/li&gt;
+  &lt;li&gt;Having no side effect also relieves the programmer of the burden of prescribing the flow of control.&lt;/li&gt;
+  &lt;li&gt;Also, programs are &lt;em&gt;“referrentially transparent”&lt;/em&gt;, that is, since expressions can be evaluated at any time, one can freely replace variables by their values and vice versa.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;similarity-and-differences&quot;&gt;Similarity and Differences&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&quot;/public/images/procedural-vs-functional.png&quot;&gt;&lt;img src=&quot;/public/images/procedural-vs-functional.png&quot; alt=&quot;Procedural vs Functional&quot; /&gt;&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Compare all this to the advantages of structured programming. Structured programs contain no &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;goto&lt;/code&gt; statements. Structured programming blocks don’t have multiple entry and exits. Moreover, structured programs are more manageable mathematically than unstructured ones.&lt;/p&gt;
+
+&lt;p&gt;But the real power of structured programs comes from modular design. Small modules have limited function, hence they can be coded in less time and also easily. Also, general purpose modules can be re-used as parts of a subsequent larger program or module. Modules of a program can be tested independently which helps reduce the time in debugging.&lt;/p&gt;
+
+&lt;p&gt;Don’t these advantages seem familiar? Well, the spirit of the advantages that structural programs have is in tune with the advantages of functional programming too, having a modular approach and having pure functions(not having multiple entry and exits). The paper shows two very important ways functional programming allows for conceptually modular flow - higher-order functions and lazy evaluation. Breaking down the program conceptually and then glueing pieces back together.&lt;/p&gt;
+
+&lt;h2 id=&quot;higher-order-functions&quot;&gt;Higher-order functions&lt;/h2&gt;
+&lt;p&gt;Functional programming allows functions which are indivisible in conventional languages to be expressed as combination of parts - a general higher order functions and some specialising ones. Once defined, higher order functions allow many operations to be programmed easily.&lt;/p&gt;
+
+&lt;p&gt;Whenever a new datatype is defined, higher order functions should be written. This makes manipulation of datatypes easy as it localises the knowledge of the implementation of the datatype. It can be thought of as extending a language with new control structure whenever required.&lt;/p&gt;
+
+&lt;h2 id=&quot;lazy-evaluations&quot;&gt;Lazy evaluations&lt;/h2&gt;
+&lt;p&gt;To understand lazy evaluations, we need to remember that functions can be composed of other functions. If &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;g&lt;/code&gt; is a function that operates on the outputs of function &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt;, then we can modularize &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt; as a generator to construct a large number of possible answers and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;g&lt;/code&gt; will only select or consume the ones it deems necessary. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt; can even be a non-terminating function, producing an infinite amount of output, but this works out as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt; will be terminated as soon as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;g&lt;/code&gt; is finished. This allows termination conditions to be separate from the loop bodies.&lt;/p&gt;
+
+&lt;p&gt;Imagine generating all possible moves ahead for a game, like chess. The generation would greatly benefit from lazy evaluation as it would only generate moves till the appropriate move is achieved.&lt;/p&gt;
+
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;The paper concludes by that modular programs need to mean more than just modules. One can only break down the program as much as the language provides the ability to glue back the pieces together. Smaller and more general modules can be reused more widely. This is the reason why functional programs are so much smaller and easier to write than conventional ones. In the end, the programmer should expect to use higher-order functions and lazy evaluation as their tools for achieving modularity.&lt;/p&gt;</content><author><name>Mriyam Bikash Tamuli</name><email>mbtamuli@gmail.com</email></author><category term="random" /><summary type="html">This article will be my take on why functional programming matters, largely with a focus on the paper with the same name, authored by John Hughes in the year 1984 - Link to the paper.</summary></entry><entry><title type="html">Keeping a Notebook</title><link href="http://localhost:4000/Modern_DS_Blog/keeping-notebook/" rel="alternate" type="text/html" title="Keeping a Notebook" /><published>2019-09-17T00:00:00-07:00</published><updated>2019-09-17T00:00:00-07:00</updated><id>http://localhost:4000/Modern_DS_Blog/keeping-notebook</id><content type="html" xml:base="http://localhost:4000/Modern_DS_Blog/keeping-notebook/">&lt;p&gt;I recently came across this &lt;a href=&quot;https://notebook.lachlanjc.me/2019-09-06_keeping_a_notebook/&quot;&gt;note&lt;/a&gt; and I could agree to all of the reasons mentioned for creating a Notebook. So here it is - &lt;a href=&quot;https://mriyam.dev/notebook&quot;&gt;https://mriyam.dev/notebook&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;I have set my own format though, I’ll keep the name of the note as the date, and I’ll put multiple headings to separate the different topics I write about on each day. Some days I might not write anything due to whatever reason, but I will at least put the reason why I have not written, even if it is a single line.&lt;/p&gt;
+
+&lt;p&gt;Here’s to hoping I am able to at least grow my writing habit using this Notebook.&lt;/p&gt;</content><author><name>Mriyam Bikash Tamuli</name><email>mbtamuli@gmail.com</email></author><category term="random" /><summary type="html">I recently came across this note and I could agree to all of the reasons mentioned for creating a Notebook. So here it is - https://mriyam.dev/notebook.</summary></entry><entry><title type="html">Configuring Postfix</title><link href="http://localhost:4000/Modern_DS_Blog/configuring-postfix/" rel="alternate" type="text/html" title="Configuring Postfix" /><published>2018-12-30T00:00:00-08:00</published><updated>2018-12-30T00:00:00-08:00</updated><id>http://localhost:4000/Modern_DS_Blog/configuring-postfix</id><content type="html" xml:base="http://localhost:4000/Modern_DS_Blog/configuring-postfix/">&lt;p&gt;I came across this really neat Docker image
+&lt;a href=&quot;https://github.com/catatnight/docker-postfix&quot;&gt;docker-postfix&lt;/a&gt;. It got me up
+and running with Postfix in a very short amount of time.&lt;/p&gt;
+
+&lt;p&gt;I’m just mentioning the extra steps I had to take to get the TLS certificates
+and the DKIM keys. As this is a post of configuring Postfix running as a
+&lt;strong&gt;Docker&lt;/strong&gt; container, I’ll also run all the setup steps inside containers.&lt;/p&gt;
+
+&lt;p&gt;First let’s create a directory for all our files and pull all the images&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;mkdir&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; ~/postfix
+docker pull certbot/dns-cloudflare
+docker pull ubuntu
+docker pull catatnight/postfix
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now let’s generate the keys. You can use
+&lt;a href=&quot;https://github.com/certbot/certbot&quot;&gt;certbot&lt;/a&gt; which also has instructions on
+&lt;a href=&quot;https://certbot.eff.org/docs/install.html#running-with-docker&quot;&gt;running with docker&lt;/a&gt;. In my case, I
+had the domain on Cloudflare, so I used the &lt;a href=&quot;https://certbot-dns-cloudflare.readthedocs.io/en/stable/&quot;&gt;dns-cloudflare plugin&lt;/a&gt; which is available as
+an image &lt;a href=&quot;https://hub.docker.com/r/certbot/dns-cloudflare&quot;&gt;dns-cloudflare&lt;/a&gt;.&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;mkdir&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; ~/postfix/letsencrypt/etc
+&lt;span class=&quot;nb&quot;&gt;mkdir&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; ~/postfix/letsencrypt/lib
+
+&lt;span class=&quot;c&quot;&gt;# Add your email and token&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt; &amp;gt; ~/postfix/letsencrypt/cloudflare.ini
+dns_cloudflare_email = cloudflare@example.com
+dns_cloudflare_api_key = 0123456789abcdef0123456789abcdef01234567
+&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF
+
+&lt;/span&gt;&lt;span class=&quot;c&quot;&gt;# Add your email where you want to recieve emails from LetsEncypt and the&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# domain for the mail&lt;/span&gt;
+docker run &lt;span class=&quot;nt&quot;&gt;-it&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--rm&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--name&lt;/span&gt; certbot &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;-v&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$HOME&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;/postfix/letsencrypt/etc:/etc/letsencrypt&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;-v&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$HOME&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;/postfix/letsencrypt/lib:/var/lib/letsencrypt&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;-v&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$HOME&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;/postfix/letsencrypt/cloudflare.ini:/tmp/cloudflare.ini:ro&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+certbot/dns-cloudflare certonly &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--agree-tos&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--dns-cloudflare&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--dns-cloudflare-credentials&lt;/span&gt; /tmp/cloudflare.ini &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--dns-cloudflare-propagation-seconds&lt;/span&gt; 60 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--manual-public-ip-logging-ok&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--no-eff-email&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--renew-by-default&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--text&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--email&lt;/span&gt; admin@example.com &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;-d&lt;/span&gt; mail.example1.com
+
+&lt;span class=&quot;c&quot;&gt;# Now we&apos;ll copy the generated certs to the proper location&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;mkdir&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$HOME&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;/postfix/certs&quot;&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;cp&lt;/span&gt; /etc/letsencrypt/archive/mail.example.com/fullchain&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;.pem &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$HOME&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;/postfix/certs/mail.example.com.crt&quot;&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;cp&lt;/span&gt; /etc/letsencrypt/archive/mail.example.com/privkey&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;.pem &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$HOME&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;/postfix/certs/mail.example.com.key&quot;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now we’ll generate the DKIM keys&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;docker run &lt;span class=&quot;nt&quot;&gt;-it&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--rm&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--name&lt;/span&gt; dkim &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;-v&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$HOME&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;/postfix/dkim-tools:/data&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+ubuntu &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+bash
+
+&lt;span class=&quot;c&quot;&gt;# The following command will run inside the container&lt;/span&gt;
+apt update &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; apt &lt;span class=&quot;nb&quot;&gt;install &lt;/span&gt;opendkim-tools &lt;span class=&quot;nt&quot;&gt;-y&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;cd&lt;/span&gt; /data
+opendkim-genkey &lt;span class=&quot;nt&quot;&gt;--selector&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;mail &lt;span class=&quot;nt&quot;&gt;--domain&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;mail.example1.com
+
+&lt;span class=&quot;c&quot;&gt;# Exit from the container&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;exit
+
+cp&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$HOME&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;/postfix/dkim-tools/mail.private&quot;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$HOME&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;/postfix/keys/&quot;&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;cp&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$HOME&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;/postfix/dkim-tools/mail.txt&quot;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$HOME&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;/postfix/keys/&quot;&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;cd&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$HOME&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;/postfix/keys/&quot;&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;chown &lt;/span&gt;opendkim:opendkim mail.private
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now we have to add the DNS entry. If you take the look at the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;mail.txt&lt;/code&gt;, like&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;cat &lt;/span&gt;mail.txt
+&lt;span class=&quot;c&quot;&gt;# OUTPUT&lt;/span&gt;
+mail._domainkey IN      TXT     &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;v=DKIM1; k=rsa; &quot;&lt;/span&gt;
+          &lt;span class=&quot;s2&quot;&gt;&quot;p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC2JynHFdaFJ+3esWnV3/ayG0rRAb8AxWa900ffYV22bpEYTO7WXAy5w1igWAEmtyzeRDlEngZAhw3GVQWsmSkydMTIvTNG9P1qXC+q23bxpq3yxxy8urqw42QusYV9n6HbU6dI6iNz0HJplQ95T6FFi7YAgzN8wuNCON0n9h9WSwIDAQAB&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;  &lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-----&lt;/span&gt; DKIM key mail &lt;span class=&quot;k&quot;&gt;for &lt;/span&gt;mail.example.com
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;You will have to add the TXT entry in your domain’s DNS records.&lt;/p&gt;
+
+&lt;p&gt;For SPF record, you need to add the following as the value of a TXT entry for
+the domain. The key in our example will be mail.example.com. The IP 1.1.1.1 will
+be replaced by the public IP address of the instance.&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;v=spf1 a include:_spf.google.com ip4:1.1.1.1 ~all
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;For multiple IP address, just repeat the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ip4&lt;/code&gt; block.&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;v=spf1 a include:_spf.google.com ip4:1.1.1.1 ip4:2.2.2.2 ~all
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Lastly, we’ll run the postfix container itself and run it in daemon mode.&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;docker run &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; 25:25 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;-e&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;maildomain&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;mail.example.com &lt;span class=&quot;nt&quot;&gt;-e&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;smtp_user&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;user1:mySecretPassword &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;-v&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$HOME&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;/postfix/keys:/etc/opendkim/domainkeys&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;-v&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$HOME&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;/postfix/certs:/etc/postfix/certs&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--name&lt;/span&gt; postfix &lt;span class=&quot;nt&quot;&gt;-d&lt;/span&gt; catatnight/postfix
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;We’ll now you just need to point whatever application you use to port 25, with
+the SMTP credentials &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;user1:mySecretPassword&lt;/code&gt;. Enjoy emails that have a &lt;a href=&quot;https://www.mail-tester.com&quot;&gt;good score&lt;/a&gt; and won’t land up in spam!&lt;/p&gt;</content><author><name>Mriyam Bikash Tamuli</name><email>mbtamuli@gmail.com</email></author><category term="linux" /><category term="docker" /><summary type="html">I came across this really neat Docker image docker-postfix. It got me up and running with Postfix in a very short amount of time.</summary></entry><entry><title type="html">Postfix in a container</title><link href="http://localhost:4000/Modern_DS_Blog/postfix-in-a-container/" rel="alternate" type="text/html" title="Postfix in a container" /><published>2018-08-14T00:00:00-07:00</published><updated>2018-08-14T00:00:00-07:00</updated><id>http://localhost:4000/Modern_DS_Blog/postfix-in-a-container</id><content type="html" xml:base="http://localhost:4000/Modern_DS_Blog/postfix-in-a-container/">&lt;p&gt;Postfix is a service which forks itself and runs in the background. Postfix
+version &lt;a href=&quot;http://www.postfix.org/announcements/postfix-3.3.0.html&quot;&gt;3.3.0 added container support&lt;/a&gt;.
+There was an issue where Postfix could not run as &lt;em&gt;PID=1&lt;/em&gt;, and it was swiftly
+&lt;a href=&quot;http://www.postfix.org/announcements/postfix-3.3.1.html&quot;&gt;fixed in version 3.3.1&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;As I could not find any official Docker image for the latest versin of Postfix,
+I decided to build one myself. At the time I built the image, there was no
+Debian package available so I had to compile the package &lt;a href=&quot;http://cdn.postfix.johnriley.me/mirrors/postfix-release/index.html&quot;&gt;from source&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Here is the link to &lt;a href=&quot;https://github.com/EasyEngine/dockerfiles/blob/master/postfix/Dockerfile&quot;&gt;the Dockerfile&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;You can build the docker image yourselves and use it too. Just run&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;git clone https://github.com/EasyEngine/dockerfiles.git
+&lt;span class=&quot;nb&quot;&gt;cd &lt;/span&gt;postfix
+docker build &lt;span class=&quot;nt&quot;&gt;-t&lt;/span&gt; postfix &lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# Now run the docker image using&lt;/span&gt;
+docker run &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;-h&lt;/span&gt; example.com &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; 1025:25 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;-v&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;/dev/log:/dev/log&quot;&lt;/span&gt;
+postfix
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now you can point in the smtp settings to use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;localhost:1025&lt;/code&gt;. The logs will
+be available at &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/var/log/mail.log&lt;/code&gt; on your host.&lt;/p&gt;</content><author><name>Mriyam Bikash Tamuli</name><email>mbtamuli@gmail.com</email></author><category term="linux" /><category term="docker" /><summary type="html">Postfix is a service which forks itself and runs in the background. Postfix version 3.3.0 added container support. There was an issue where Postfix could not run as PID=1, and it was swiftly fixed in version 3.3.1</summary></entry><entry><title type="html">Hello, World!</title><link href="http://localhost:4000/Modern_DS_Blog/hello-world/" rel="alternate" type="text/html" title="Hello, World!" /><published>2018-08-01T00:00:00-07:00</published><updated>2018-08-01T00:00:00-07:00</updated><id>http://localhost:4000/Modern_DS_Blog/hello-world</id><content type="html" xml:base="http://localhost:4000/Modern_DS_Blog/hello-world/">&lt;p&gt;I feel it is necessary to start with &lt;a href=&quot;https://en.wikipedia.org/wiki/%22Hello,_World!%22_program&quot;&gt;Hello, World!&lt;/a&gt; when exploring anything new. That’s all for now. :)&lt;/p&gt;</content><author><name>Mriyam Bikash Tamuli</name><email>mbtamuli@gmail.com</email></author><category term="random" /><summary type="html">I feel it is necessary to start with Hello, World! when exploring anything new. That’s all for now. :)</summary></entry></feed>

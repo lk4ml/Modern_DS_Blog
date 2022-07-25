@@ -1,9 +1,9 @@
 
-title:               "mbtamuli's scratchpad"
-tagline:             'To infinity and beyond'
-description:         'Linux enthusiast. Tinkerer. Love me a challenge.'
-url:                 "https://mbtamuli.github.io"
-baseurl:             ''
+title:               "Minimal Statistics Maximum Information"
+tagline:             'On my path to makes things easier for everyone'
+description:         'Modern Day Data Scientistist, Breaking down concepts and .'
+url:                 "https://lk4ml.github.io"
+baseurl:             '/Modern_DS_Blog'
 paginate:            5
 permalink:           /:title/
 future:              true

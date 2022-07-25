@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+  <head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  <link type="application/atom+xml" rel="alternate" href="http://localhost:4000/Modern_DS_Blog/feed.xml" title="mbtamuli&apos;s scratchpad" />
+
+  <!-- Enable responsiveness on mobile devices-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>
+    
+      Configuring Postfix &middot; mbtamuli's scratchpad
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/Modern_DS_Blog/public/css/poole.css">
+  <link rel="stylesheet" href="/Modern_DS_Blog/public/css/syntax.css">
+  <link rel="stylesheet" href="/Modern_DS_Blog/public/css/lanyon.css">
+  <link rel="stylesheet" href="/Modern_DS_Blog/public/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700%7CPT+Sans:400">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400" >
+
+  <!-- Favicon -->
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+  <meta name="msapplication-TileColor" content="#da532c">
+  <meta name="theme-color" content="#ffffff">
+
+  <!-- RSS -->
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="/atom.xml">
+</head>
+
+
+  <body class="theme-base-08">
+
+    <!-- Target for toggling the sidebar `.sidebar-checkbox` is for regular
+     styles, `#sidebar-checkbox` for behavior. -->
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox" >
+
+
+<!-- Toggleable sidebar -->
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p>Linux enthusiast. Tinkerer. Love me a challenge.</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item" href="/Modern_DS_Blog/">Home</a>
+
+    
+
+    
+    
+      
+        
+      
+    
+      
+    
+      
+        
+      
+    
+      
+        
+          <a class="sidebar-nav-item" href="/about/">About</a>
+        
+      
+    
+      
+    
+      
+        
+          <a class="sidebar-nav-item" href="/categories/">Categories</a>
+        
+      
+    
+      
+        
+          <a class="sidebar-nav-item" href="/cli/">CLI Snippets</a>
+        
+      
+    
+      
+    
+      
+    
+      
+        
+          <a class="sidebar-nav-item" href="/notebook/">Notebook</a>
+        
+      
+    
+      
+        
+      
+    
+
+    <span class="sidebar-nav-item">Currently v0.0.6</span>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/mbtamuli"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/mbtamuli"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/mbtamuli/"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="https://mriyam.dev/atom.xml"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>
+      &copy; 2022. All rights reserved.
+    </p>
+  </div>
+</div>
+
+
+    <!-- Wrap is the content to shift when toggling the sidebar. We wrap the
+         content to avoid any CSS collisions with our real content. -->
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/Modern_DS_Blog/" title="Home">mbtamuli's scratchpad</a>
+            <small>To infinity and beyond</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+        <div class="post">
+  <h1 class="post-title">Configuring Postfix</h1>
+  <span class="post-date">30 Dec 2018</span>
+  <span class="reading-time" title="Estimated read time">
+    
+    2 min read.
+</span>
+  <p>I came across this really neat Docker image
+<a href="https://github.com/catatnight/docker-postfix">docker-postfix</a>. It got me up
+and running with Postfix in a very short amount of time.</p>
+
+<p>I’m just mentioning the extra steps I had to take to get the TLS certificates
+and the DKIM keys. As this is a post of configuring Postfix running as a
+<strong>Docker</strong> container, I’ll also run all the setup steps inside containers.</p>
+
+<p>First let’s create a directory for all our files and pull all the images</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">mkdir</span> <span class="nt">-p</span> ~/postfix
+docker pull certbot/dns-cloudflare
+docker pull ubuntu
+docker pull catatnight/postfix
+</code></pre></div></div>
+
+<p>Now let’s generate the keys. You can use
+<a href="https://github.com/certbot/certbot">certbot</a> which also has instructions on
+<a href="https://certbot.eff.org/docs/install.html#running-with-docker">running with docker</a>. In my case, I
+had the domain on Cloudflare, so I used the <a href="https://certbot-dns-cloudflare.readthedocs.io/en/stable/">dns-cloudflare plugin</a> which is available as
+an image <a href="https://hub.docker.com/r/certbot/dns-cloudflare">dns-cloudflare</a>.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">mkdir</span> <span class="nt">-p</span> ~/postfix/letsencrypt/etc
+<span class="nb">mkdir</span> <span class="nt">-p</span> ~/postfix/letsencrypt/lib
+
+<span class="c"># Add your email and token</span>
+<span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; ~/postfix/letsencrypt/cloudflare.ini
+dns_cloudflare_email = cloudflare@example.com
+dns_cloudflare_api_key = 0123456789abcdef0123456789abcdef01234567
+</span><span class="no">EOF
+
+</span><span class="c"># Add your email where you want to recieve emails from LetsEncypt and the</span>
+<span class="c"># domain for the mail</span>
+docker run <span class="nt">-it</span> <span class="nt">--rm</span> <span class="se">\</span>
+<span class="nt">--name</span> certbot <span class="se">\</span>
+<span class="nt">-v</span> <span class="s2">"</span><span class="nv">$HOME</span><span class="s2">/postfix/letsencrypt/etc:/etc/letsencrypt"</span> <span class="se">\</span>
+<span class="nt">-v</span> <span class="s2">"</span><span class="nv">$HOME</span><span class="s2">/postfix/letsencrypt/lib:/var/lib/letsencrypt"</span> <span class="se">\</span>
+<span class="nt">-v</span> <span class="s2">"</span><span class="nv">$HOME</span><span class="s2">/postfix/letsencrypt/cloudflare.ini:/tmp/cloudflare.ini:ro"</span> <span class="se">\</span>
+certbot/dns-cloudflare certonly <span class="se">\</span>
+<span class="nt">--agree-tos</span> <span class="se">\</span>
+<span class="nt">--dns-cloudflare</span> <span class="se">\</span>
+<span class="nt">--dns-cloudflare-credentials</span> /tmp/cloudflare.ini <span class="se">\</span>
+<span class="nt">--dns-cloudflare-propagation-seconds</span> 60 <span class="se">\</span>
+<span class="nt">--manual-public-ip-logging-ok</span> <span class="se">\</span>
+<span class="nt">--no-eff-email</span> <span class="se">\</span>
+<span class="nt">--renew-by-default</span>
+<span class="nt">--text</span> <span class="se">\</span>
+<span class="nt">--email</span> admin@example.com <span class="se">\</span>
+<span class="nt">-d</span> mail.example1.com
+
+<span class="c"># Now we'll copy the generated certs to the proper location</span>
+<span class="nb">mkdir</span> <span class="nt">-p</span> <span class="s2">"</span><span class="nv">$HOME</span><span class="s2">/postfix/certs"</span>
+<span class="nb">cp</span> /etc/letsencrypt/archive/mail.example.com/fullchain<span class="k">*</span>.pem <span class="s2">"</span><span class="nv">$HOME</span><span class="s2">/postfix/certs/mail.example.com.crt"</span>
+<span class="nb">cp</span> /etc/letsencrypt/archive/mail.example.com/privkey<span class="k">*</span>.pem <span class="s2">"</span><span class="nv">$HOME</span><span class="s2">/postfix/certs/mail.example.com.key"</span>
+</code></pre></div></div>
+
+<p>Now we’ll generate the DKIM keys</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker run <span class="nt">-it</span> <span class="nt">--rm</span> <span class="se">\</span>
+<span class="nt">--name</span> dkim <span class="se">\</span>
+<span class="nt">-v</span> <span class="s2">"</span><span class="nv">$HOME</span><span class="s2">/postfix/dkim-tools:/data"</span> <span class="se">\</span>
+ubuntu <span class="se">\</span>
+bash
+
+<span class="c"># The following command will run inside the container</span>
+apt update <span class="o">&amp;&amp;</span> apt <span class="nb">install </span>opendkim-tools <span class="nt">-y</span>
+<span class="nb">cd</span> /data
+opendkim-genkey <span class="nt">--selector</span><span class="o">=</span>mail <span class="nt">--domain</span><span class="o">=</span>mail.example1.com
+
+<span class="c"># Exit from the container</span>
+<span class="nb">exit
+
+cp</span> <span class="s2">"</span><span class="nv">$HOME</span><span class="s2">/postfix/dkim-tools/mail.private"</span> <span class="s2">"</span><span class="nv">$HOME</span><span class="s2">/postfix/keys/"</span>
+<span class="nb">cp</span> <span class="s2">"</span><span class="nv">$HOME</span><span class="s2">/postfix/dkim-tools/mail.txt"</span> <span class="s2">"</span><span class="nv">$HOME</span><span class="s2">/postfix/keys/"</span>
+<span class="nb">cd</span> <span class="s2">"</span><span class="nv">$HOME</span><span class="s2">/postfix/keys/"</span>
+<span class="nb">chown </span>opendkim:opendkim mail.private
+</code></pre></div></div>
+
+<p>Now we have to add the DNS entry. If you take the look at the <code class="language-plaintext highlighter-rouge">mail.txt</code>, like</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat </span>mail.txt
+<span class="c"># OUTPUT</span>
+mail._domainkey IN      TXT     <span class="o">(</span> <span class="s2">"v=DKIM1; k=rsa; "</span>
+          <span class="s2">"p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC2JynHFdaFJ+3esWnV3/ayG0rRAb8AxWa900ffYV22bpEYTO7WXAy5w1igWAEmtyzeRDlEngZAhw3GVQWsmSkydMTIvTNG9P1qXC+q23bxpq3yxxy8urqw42QusYV9n6HbU6dI6iNz0HJplQ95T6FFi7YAgzN8wuNCON0n9h9WSwIDAQAB"</span> <span class="o">)</span>  <span class="p">;</span> <span class="nt">-----</span> DKIM key mail <span class="k">for </span>mail.example.com
+</code></pre></div></div>
+
+<p>You will have to add the TXT entry in your domain’s DNS records.</p>
+
+<p>For SPF record, you need to add the following as the value of a TXT entry for
+the domain. The key in our example will be mail.example.com. The IP 1.1.1.1 will
+be replaced by the public IP address of the instance.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>v=spf1 a include:_spf.google.com ip4:1.1.1.1 ~all
+</code></pre></div></div>
+
+<p>For multiple IP address, just repeat the <code class="language-plaintext highlighter-rouge">ip4</code> block.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>v=spf1 a include:_spf.google.com ip4:1.1.1.1 ip4:2.2.2.2 ~all
+</code></pre></div></div>
+
+<p>Lastly, we’ll run the postfix container itself and run it in daemon mode.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker run <span class="nt">-p</span> 25:25 <span class="se">\</span>
+<span class="nt">-e</span> <span class="nv">maildomain</span><span class="o">=</span>mail.example.com <span class="nt">-e</span> <span class="nv">smtp_user</span><span class="o">=</span>user1:mySecretPassword <span class="se">\</span>
+<span class="nt">-v</span> <span class="s2">"</span><span class="nv">$HOME</span><span class="s2">/postfix/keys:/etc/opendkim/domainkeys"</span> <span class="se">\</span>
+<span class="nt">-v</span> <span class="s2">"</span><span class="nv">$HOME</span><span class="s2">/postfix/certs:/etc/postfix/certs"</span> <span class="se">\</span>
+<span class="nt">--name</span> postfix <span class="nt">-d</span> catatnight/postfix
+</code></pre></div></div>
+
+<p>We’ll now you just need to point whatever application you use to port 25, with
+the SMTP credentials <code class="language-plaintext highlighter-rouge">user1:mySecretPassword</code>. Enjoy emails that have a <a href="https://www.mail-tester.com">good score</a> and won’t land up in spam!</p>
+
+</div>
+
+<script src="https://utteranc.es/client.js"
+        repo="mbtamuli/mbtamuli.github.io"
+        issue-term="pathname"
+        label="comment"
+        theme="preferred-color-scheme"
+        crossorigin="anonymous"
+        async>
+</script>
+
+<div class="related">
+  <h2>Related Posts</h2>
+  <ul class="related-posts">
+    
+      <li>
+        <h3>
+          <a href="/Modern_DS_Blog/route-vpn-traffic/">
+            Route VPN Traffic
+            <small>26 Aug 2020</small>
+          </a>
+        </h3>
+      </li>
+    
+      <li>
+        <h3>
+          <a href="/Modern_DS_Blog/backup-work-git/">
+            Backup files to git repo before shutdown
+            <small>24 Jul 2020</small>
+          </a>
+        </h3>
+      </li>
+    
+      <li>
+        <h3>
+          <a href="/Modern_DS_Blog/functional-programming/">
+            Why Functional Programming Matters
+            <small>11 Nov 2019</small>
+          </a>
+        </h3>
+      </li>
+    
+  </ul>
+</div>
+
+      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+    <script>
+      (function(document) {
+        var toggle = document.querySelector('.sidebar-toggle');
+        var sidebar = document.querySelector('#sidebar');
+        var checkbox = document.querySelector('#sidebar-checkbox');
+
+        document.addEventListener('click', function(e) {
+          var target = e.target;
+
+          if(!checkbox.checked ||
+             sidebar.contains(target) ||
+             (target === checkbox || target === toggle)) return;
+
+          checkbox.checked = false;
+        }, false);
+      })(document);
+    </script>
+  </body>
+</html>
