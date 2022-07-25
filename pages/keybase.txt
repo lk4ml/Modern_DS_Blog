@@ -1,0 +1,88 @@
+---
+permalink: /.well-known/keybase.txt
+---
+==================================================================
+https://keybase.io/mbtamuli
+--------------------------------------------------------------------
+
+I hereby claim:
+
+  * I am an admin of https://mriyam.dev
+  * I am mbtamuli (https://keybase.io/mbtamuli) on keybase.
+  * I have a public key with fingerprint 1A0B A9A3 096A 1839 D536  4064 9C11 F52C 0AAF 1EDB
+
+To do so, I am signing this object:
+
+{
+  "body": {
+    "key": {
+      "eldest_kid": "010123214a4593c8485c79b63713fec9ebc59eac78ab5a0711998f7d9eb4b45018b50a",
+      "fingerprint": "1a0ba9a3096a1839d53640649c11f52c0aaf1edb",
+      "host": "keybase.io",
+      "key_id": "9c11f52c0aaf1edb",
+      "kid": "010123214a4593c8485c79b63713fec9ebc59eac78ab5a0711998f7d9eb4b45018b50a",
+      "uid": "f96a0f1395e18809ed810f1c8d2d0419",
+      "username": "mbtamuli"
+    },
+    "merkle_root": {
+      "ctime": 1554960278,
+      "hash_meta": "4a1151ffd8f221e9d7cc9ae32efe9db601a1a87d477d384ed0cb8e8a49da85bf",
+      "seqno": 5140893
+    },
+    "revoke": {
+      "sig_ids": [
+        "4686d7295b1d0f79da411b1653829b230950cbf63fffcb0a890e804719e8820a0f"
+      ]
+    },
+    "service": {
+      "hostname": "mriyam.dev",
+      "protocol": "https:"
+    },
+    "type": "web_service_binding",
+    "version": 1
+  },
+  "ctime": 1554960294,
+  "expire_in": 157680000,
+  "prev": "9df1cfb3076a7d1396c7299028d50c2c827174463c914d040c6443aade93b9eb",
+  "seqno": 22,
+  "tag": "signature"
+}
+
+which yields the signature:
+
+-----BEGIN PGP MESSAGE-----
+
+owGtU2tQVVUUvipXjTF5qeUPHxzHGItw7/Pcm4C0VJyc0UTSFJg7+5y9j/d4uQ/v
+vSDiaxqzNK4PxBGCIpSQQklmMM0c0oxMwRLTGYZCbSzxkdpN0DQf075MTjNNPzt/
+zqy1v/Wtb31r7y1PDrJFD2iNu5VhH3l14ID2q7ot95NTjSsE3UuXC6krBBfr/7F8
+ygJBh8uiQqoAIICiJEKZyAqWDCQjxdCwrkoalExmYKYbCmbE0BDRFQI0CDFGpkb5
+gazLCoBIVwARkgXT8ixmfp/f8gQ5LSRAJ5hIAKsEIglTRVJloMrYgNBURAMQYkJG
+dV7o9AYiFVycTgIsxfLyHA8c/fL+A/8/6y7opzO5TmBCCSsMIgQwowjy2EBUpECG
+OAIMML+HuBlHu/UgcRfkW8KqZMHN/K585vB7vcGIuUbQikCgoshYBaKG+IAk4HS4
+WZDwSplAqEDTpMgURcgw1QwDEyaJzOSBrgJIIEEalTWNSkhmFBg6YojImBKk6CbX
+EWBLPV4hVYEyQFjiCvys0OtikeYBazG3LSCk5giyitQjBVQTsaJDCkyNE8gQ6lBV
+JCRiXeSrUTi5qUqmaRo6IAgDhoCsQcwQEgG3Q8hbFWnnL7SMfvrIph474LeWE3cK
+ZYVckc/vDXoNbz7PO4NBXyA14ktwuS8CXMZ0x98UDt3yUH5LeEUh8wcsr4f7xJH/
+sgzLyQIr8ll+5rAiCEVTEeBfpA9vx+8E5YsxdQloKtEo35lq8DExEBHlE4kGEjWo
+ybIqGRjKfHvAUGVZIoQyLOl8//94KIpcJ1nMOblzHhIs8DNhVfSGgVKUbUC0bcyo
+xKjcdnL55Q2T7UeuxXsfvyz7wMizskU/Efs403ky1naw+0F82R4wcePe2GQ45Wp5
+jXtiXcqemU3rR2/csqkntupiuO5YbP6FutpRJeMv1tgSzt6q7CpLHNI8zRzsHr57
+56vTLh3ffu/P4VmV5Ukf5yzcfGfIBPvUtirbS4fmsdXFSXHrE+OjxtqzB7f2dT+6
+3BtaN6M9nNu4qKs2nDWye50669T3SYPmLDjcuyxjXeinptv0xPlh1Zt+LMo+kdSg
+306v27yv4VDvK2mhooprCR8sOS1+eGHOHTzuxnt5fduOpqedXPl5S/mZc6u/Lss8
+f6Bkw92EK+1xNwd1UVd4X6WR8un9UzlVp9N+HYOPh1ZX99Sm5aU4zY4vJ7R0Piyz
+D4WVD/pqt64tzarPmWTtnzohu8r7dPLcvIXP5RotbTEHF867XN17Jk957dnWHzLH
+zrwbjgqEvzkXnkapIVdUP3TObCwNKUdiip1Nu5rvD5vfkfp+4qIvapvMR3Hl+5/f
+5+5pTky/tWuzaaQcq0lYee6e7xnwem9XTNv1GNqwpnQUqD9GHTfM4b9lXHGdHbv7
+7fEjuj/TD3S+88bNm87MHVfGvThif3rrxj9cvim3O+wV7/4+eWf83ZLrpXPtFdPH
+7c0sXtLX2Jn8ZsPQpfdnnzWr25pndf1cvOOjXT2/HD46rO6tqbYZL7R8V1uYPXjr
+wSIhVD8l46nRk74qmd249tvtHY88bducofkCuLRAW7A1PLl+zV8=
+=p+u6
+-----END PGP MESSAGE-----
+
+And finally, I am proving ownership of this host by posting or
+appending to this document.
+
+View my publicly-auditable identity here: https://keybase.io/mbtamuli
+
+==================================================================
