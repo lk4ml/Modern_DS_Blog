@@ -4,7 +4,6 @@ permalink: /Drug/
 title: Drug
 ---
 
-
 <div id="archives">
 {% for Drug in site.categories %}
   <div class="archive-group">
